@@ -1,8 +1,8 @@
 {
-  "name": "suggest-react",
+  "name": "react-suggest",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://kazak13-1990.github.io/suggest-react",
+  "homepage": "https://kazak13-1990.github.io/react-suggest",
   "dependencies": {
     "@babel/core": "7.1.0",
     "@svgr/webpack": "2.4.1",
