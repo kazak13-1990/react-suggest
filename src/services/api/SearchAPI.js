@@ -2,7 +2,7 @@ import DATA from '../../DATA';
 import FuzzySearch from "fuzzy-search";
 
 
-const REQUEST_DELAY = 800;
+const REQUEST_DELAY = 200;
 const searcher = new FuzzySearch(DATA.data, ['title'], {sort: true});
 
 const emulateRequest = (val, count) => {

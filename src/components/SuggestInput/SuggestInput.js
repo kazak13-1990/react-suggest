@@ -29,24 +29,29 @@ export default class SuggestInput extends React.Component {
         inputValue: '',
         suggestResults: [],
         activeItemIndex: DEFAULT_ITEM_INDEX,
+        showResults: true,
     };
+
+    searchCount = 0;
 
     onChange = async (event) => {
         const {maxSuggestCount} = this.props;
         const value = event.target.value;
+        const searchCount = ++this.searchCount;
         this.setState({
             inputValue: value,
             activeItemIndex: DEFAULT_ITEM_INDEX,
+            showResults: true,
         });
 
+        let suggestResults = [];
         if (value !== '') {
-            const suggestResults = await SearchService.search(value, maxSuggestCount);
+            suggestResults = await SearchService.search(value, maxSuggestCount);
+
+        }
+        if (searchCount === this.searchCount) {
             this.setState({
                 suggestResults: suggestResults,
-            });
-        } else {
-            this.setState({
-                suggestResults: [],
             });
         }
     };
@@ -68,12 +73,18 @@ export default class SuggestInput extends React.Component {
     };
 
     onKeyPress = (event) => {
-        const {activeItemIndex} = this.state;
+        const {activeItemIndex, showResults} = this.state;
         const keyCode = event.keyCode || event.which;
 
         if (keyCode === handleKeys.keyDown) {
             event.preventDefault();
-            this.selectSuggestItem(activeItemIndex + 1);
+            if (showResults){
+                this.selectSuggestItem(activeItemIndex + 1);
+            } else {
+                this.setState({
+                    showResults: true,
+                })
+            }
         }
         if (keyCode === handleKeys.keyUp) {
             event.preventDefault();
@@ -101,14 +112,15 @@ export default class SuggestInput extends React.Component {
         }
     };
 
-    onBlur = (event) => {
-        const {activeItemIndex} = this.state;
-        this.onSelectSuggest(activeItemIndex, false);
+    onBlur = () => {
+        this.setState({
+            showResults: false,
+        })
     };
 
     render() {
         const {SuggestItem} = this.props;
-        const { inputValue, suggestResults, activeItemIndex } = this.state;
+        const { inputValue, suggestResults, showResults, activeItemIndex } = this.state;
 
         const suggestValue = suggestResults[activeItemIndex] && suggestResults[activeItemIndex].title;
         const displayValue = suggestValue || inputValue;
@@ -126,24 +138,24 @@ export default class SuggestInput extends React.Component {
                         onChange={this.onChange}
                         onKeyDown={this.onKeyPress}
                     />
-                    {(suggestResults.length > 0) &&
-                    <ul
-                        className="suggest-block"
-                    >
-                        {suggestResults.map((suggestItem, index) => {
-                            const isActive = activeItemIndex === index;
-                            const className = ['suggest-item'];
-                            isActive && className.push('isActive');
-                            return (
-                                <SuggestItem
-                                    key={index}
-                                    className={className.join(' ')}
-                                    suggestItem={suggestItem}
-                                    onClick={() => this.onSelectSuggest(index)}
-                                />
-                            )
-                        })}
-                    </ul>
+                    {(suggestResults.length > 0) && showResults &&
+                        <ul
+                            className="suggest-block"
+                        >
+                            {suggestResults.map((suggestItem, index) => {
+                                const isActive = activeItemIndex === index;
+                                const className = ['suggest-item'];
+                                isActive && className.push('isActive');
+                                return (
+                                    <SuggestItem
+                                        key={index}
+                                        className={className.join(' ')}
+                                        suggestItem={suggestItem}
+                                        onClick={() => this.onSelectSuggest(index)}
+                                    />
+                                )
+                            })}
+                        </ul>
                     }
                 </div>
             </OutsideClickHandler>
