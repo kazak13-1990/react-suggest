@@ -1,63 +1,52 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import OutsideClickHandler from 'react-outside-click-handler';
-import SuggestItem from "../SuggestItem";
-import SearchService from "../../services/SearchService";
+import {noop} from "../../utils/miscUtils";
 import './suggest-input.css';
 
 
-const MAX_SUGGEST_COUNT = 10;
 const DEFAULT_ITEM_INDEX = -1;
 const handleKeys = {
     keyUp: 38,
     keyDown: 40,
     enter: 13,
+    esc: 27,
 };
 
-export default class SuggestInput extends React.Component {
+export default class SuggestInput extends React.PureComponent {
     static propTypes = {
-        maxSuggestCount: PropTypes.number,
+        suggestResults: PropTypes.array.isRequired,
+        SuggestItem: PropTypes.oneOfType([
+            PropTypes.func,
+            PropTypes.node,
+        ]).isRequired,
         onAction: PropTypes.func,
     };
 
     static defaultProps = {
-        SuggestItem: SuggestItem,
-        maxSuggestCount: MAX_SUGGEST_COUNT,
+        onAction: noop,
     };
 
     state = {
         inputValue: '',
-        suggestResults: [],
         activeItemIndex: DEFAULT_ITEM_INDEX,
         showResults: true,
     };
 
-    searchCount = 0;
-
-    onChange = async (event) => {
-        const {maxSuggestCount} = this.props;
+    onChange = (event) => {
+        const {onSearch} = this.props;
         const value = event.target.value;
-        const searchCount = ++this.searchCount;
         this.setState({
             inputValue: value,
             activeItemIndex: DEFAULT_ITEM_INDEX,
             showResults: true,
         });
 
-        let suggestResults = [];
-        if (value !== '') {
-            suggestResults = await SearchService.search(value, maxSuggestCount);
-
-        }
-        if (searchCount === this.searchCount) {
-            this.setState({
-                suggestResults: suggestResults,
-            });
-        }
+        onSearch(value);
     };
 
     selectSuggestItem = (newActiveItem) => {
-        const {suggestResults} = this.state;
+        const {suggestResults} = this.props;
         if (suggestResults.length > 0) {
             const maxActiveItemIndex = suggestResults.length - 1;
             if (newActiveItem > maxActiveItemIndex) {
@@ -88,28 +77,35 @@ export default class SuggestInput extends React.Component {
         }
         if (keyCode === handleKeys.keyUp) {
             event.preventDefault();
-            this.selectSuggestItem(activeItemIndex - 1);
+            if (showResults){
+                this.selectSuggestItem(activeItemIndex - 1);
+            } else {
+                this.setState({
+                    showResults: true,
+                })
+            }
         }
         if (keyCode === handleKeys.enter) {
             event.preventDefault();
             this.onSelectSuggest(activeItemIndex);
         }
+        if (keyCode === handleKeys.esc) {
+            event.preventDefault();
+            this.onBlur();
+        }
     };
 
-    onSelectSuggest = (suggestIndex, finished = true) => {
-        const {onAction} = this.props;
-        const {inputValue, suggestResults} = this.state;
+    onSelectSuggest = (suggestIndex) => {
+        const {onAction, suggestResults} = this.props;
+        const {inputValue} = this.state;
         const suggestValue = suggestResults[suggestIndex] && suggestResults[suggestIndex].title;
         const newInputValue = suggestValue || inputValue;
         this.setState({
             inputValue: newInputValue,
             activeItemIndex: DEFAULT_ITEM_INDEX,
-            suggestResults: [],
         });
 
-        if (finished) {
-            onAction && onAction(newInputValue);
-        }
+        onAction(newInputValue);
     };
 
     onBlur = () => {
@@ -119,8 +115,8 @@ export default class SuggestInput extends React.Component {
     };
 
     render() {
-        const {SuggestItem} = this.props;
-        const { inputValue, suggestResults, showResults, activeItemIndex } = this.state;
+        const { SuggestItem, suggestResults, className } = this.props;
+        const { inputValue, showResults, activeItemIndex } = this.state;
 
         const suggestValue = suggestResults[activeItemIndex] && suggestResults[activeItemIndex].title;
         const displayValue = suggestValue || inputValue;
@@ -129,7 +125,7 @@ export default class SuggestInput extends React.Component {
             <OutsideClickHandler
                 onOutsideClick={this.onBlur}
             >
-                <div className="suggest-input">
+                <div className={`suggest-input ${className}`}>
                     <input
                         type="text"
                         value={displayValue}

@@ -1,4 +1,4 @@
-import DATA from '../../DATA';
+import DATA from './DATA';
 import FuzzySearch from "fuzzy-search";
 
 

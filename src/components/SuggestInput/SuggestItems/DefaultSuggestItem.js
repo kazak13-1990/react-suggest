@@ -1,7 +1,7 @@
 import React from 'react';
 
 
-const SuggestItem = ({suggestItem, className, onClick}) => {
+const DefaultSuggestItem = ({suggestItem, className, onClick}) => {
     return (
         <li
             className={className}
@@ -12,4 +12,4 @@ const SuggestItem = ({suggestItem, className, onClick}) => {
     )
 };
 
-export default SuggestItem;
+export default DefaultSuggestItem;

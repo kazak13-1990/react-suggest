@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import SuggestInput from './components/SuggestInput/SuggestInput';
+import SearchWithSuggest from "./components/SearchWithSuggest"
+import SuggestItemWithDescr from "./components/SuggestInput/SuggestItems/SuggestItemWithDescr";
 import "./App.css";
 
 
@@ -7,9 +8,21 @@ class App extends Component {
     render() {
         return (
             <div className="app">
-                <SuggestInput
-                    maxSuggestCount={7}
-                    onAction={(result) => alert('Действие с результатом: ' + result)}
+                <h2>Default suggest</h2>
+                <SearchWithSuggest
+                    className="search-first"
+                    onAction={(result) => alert('Search: ' + result)}
+                />
+                <div>
+                    <p>Some content after suggest input</p>
+                </div>
+                <hr/>
+                <h2>Suggest with descriptions</h2>
+                <SearchWithSuggest
+                    className="search-second"
+                    SuggestItem={SuggestItemWithDescr}
+                    maxSuggestCount={5}
+                    onAction={(result) => alert('Search: ' + result)}
                 />
                 <div>
                     <p>Some content after suggest input</p>
