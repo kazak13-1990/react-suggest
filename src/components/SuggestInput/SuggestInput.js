@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import OutsideClickHandler from 'react-outside-click-handler';
 import {noop} from "../../utils/miscUtils";
+import SuggestResults from "./SuggestResults";
 import './suggest-input.css';
 
 
@@ -33,6 +34,24 @@ export default class SuggestInput extends React.PureComponent {
         showResults: true,
     };
 
+    handlerActions = {
+        [handleKeys.keyUp]: () => {
+            const {activeItemIndex} = this.state;
+            this.selectSuggestItemWithCheck(activeItemIndex - 1);
+        },
+        [handleKeys.keyDown]: () => {
+            const {activeItemIndex} = this.state;
+            this.selectSuggestItemWithCheck(activeItemIndex + 1);
+        },
+        [handleKeys.enter]: () => {
+            const {activeItemIndex} = this.state;
+            this.onSelectSuggest(activeItemIndex);
+        },
+        [handleKeys.esc]: () => {
+            this.onBlur();
+        },
+    };
+
     onChange = (event) => {
         const {onSearch} = this.props;
         const value = event.target.value;
@@ -61,37 +80,24 @@ export default class SuggestInput extends React.PureComponent {
         }
     };
 
+    selectSuggestItemWithCheck = (index) => {
+        const {showResults} = this.state;
+        if (showResults){
+            this.selectSuggestItem(index);
+        } else {
+            this.setState({
+                showResults: true,
+            })
+        }
+    };
+
     onKeyPress = (event) => {
-        const {activeItemIndex, showResults} = this.state;
         const keyCode = event.keyCode || event.which;
 
-        if (keyCode === handleKeys.keyDown) {
+        const action = this.handlerActions[keyCode];
+        if (action) {
             event.preventDefault();
-            if (showResults){
-                this.selectSuggestItem(activeItemIndex + 1);
-            } else {
-                this.setState({
-                    showResults: true,
-                })
-            }
-        }
-        if (keyCode === handleKeys.keyUp) {
-            event.preventDefault();
-            if (showResults){
-                this.selectSuggestItem(activeItemIndex - 1);
-            } else {
-                this.setState({
-                    showResults: true,
-                })
-            }
-        }
-        if (keyCode === handleKeys.enter) {
-            event.preventDefault();
-            this.onSelectSuggest(activeItemIndex);
-        }
-        if (keyCode === handleKeys.esc) {
-            event.preventDefault();
-            this.onBlur();
+            action();
         }
     };
 
@@ -134,25 +140,12 @@ export default class SuggestInput extends React.PureComponent {
                         onChange={this.onChange}
                         onKeyDown={this.onKeyPress}
                     />
-                    {(suggestResults.length > 0) && showResults &&
-                        <ul
-                            className="suggest-block"
-                        >
-                            {suggestResults.map((suggestItem, index) => {
-                                const isActive = activeItemIndex === index;
-                                const className = ['suggest-item'];
-                                isActive && className.push('isActive');
-                                return (
-                                    <SuggestItem
-                                        key={index}
-                                        className={className.join(' ')}
-                                        suggestItem={suggestItem}
-                                        onClick={() => this.onSelectSuggest(index)}
-                                    />
-                                )
-                            })}
-                        </ul>
-                    }
+                    <SuggestResults
+                        SuggestItem={SuggestItem}
+                        suggestResults={suggestResults}
+                        showResults={showResults}
+                        activeItemIndex={activeItemIndex}
+                    />
                 </div>
             </OutsideClickHandler>
         );
