@@ -145,6 +145,7 @@ export default class SuggestInput extends React.PureComponent {
                         suggestResults={suggestResults}
                         showResults={showResults}
                         activeItemIndex={activeItemIndex}
+                        onSelect={this.onSelectSuggest}
                     />
                 </div>
             </OutsideClickHandler>

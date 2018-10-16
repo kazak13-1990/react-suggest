@@ -1,6 +1,6 @@
 import React from 'react';
 
-const SuggestResults = ({suggestResults, showResults, activeItemIndex, SuggestItem}) => {
+const SuggestResults = ({suggestResults, showResults, activeItemIndex, SuggestItem, onSelect}) => {
     if ((suggestResults.length === 0) || !showResults) {
         return null;
     }
@@ -18,7 +18,7 @@ const SuggestResults = ({suggestResults, showResults, activeItemIndex, SuggestIt
                         key={index}
                         className={className.join(' ')}
                         suggestItem={suggestItem}
-                        onClick={() => this.onSelectSuggest(index)}
+                        onClick={() => onSelect(index)}
                     />
                 )
             })}
